@@ -47,4 +47,4 @@ export const questions = [
     },
 ];
 
-export const answers = [];
+export const allResponses = [];
