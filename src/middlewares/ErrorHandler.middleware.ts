@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ApiError } from "protocols";
+import { ApiError } from "../protocols/protocols";
 
 // Pro error handler funcionar, você precisa que os parametros
 // atendam ao ErrorRequestHandler
