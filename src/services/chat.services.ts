@@ -15,7 +15,7 @@ async function postMessage(text: string) {
     temperature: 0.6,
   });
   // Se a resposta for aceitável fazer outra requisição para pegar os 
-  // autocompletes para pŕoxima pergunta ou já pedi-los antes
+  // autocompletes para pŕoxima pergunta ou já pedi-los antes e adicionar resposta em answers
 
   console.log(completion.data);
 
