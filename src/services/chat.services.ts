@@ -4,21 +4,16 @@ import { Configuration, OpenAIApi } from "openai";
 import { questions, allResponses } from "../database/db";
 import { Questions } from "protocols/protocols";
 
-async function postMessage({ questions, isFirstChat, previousPrompt  }) {
-  let text = ""
-  let prompt = Boolean(isFirstChat) ? concatenate(text, questions) : concatenatePrevious(previousPrompt, questions)
-  console.log(prompt)
+async function postMessage({ questions }) {
+  let prompt = concatenate(questions);
   let returnedQuestion = ""
   while (returnedQuestion.length === 0) {
     let completion = await handleGPT(prompt)
-    // console.log(completion.data.choices[0])
-    returnedQuestion = completion.data.choices[0].text.replace("\n", '');
+    returnedQuestion = completion.data.choices[0].text;
+    console.log(returnedQuestion)
   }
 
-  return {
-    createdQuestion: returnedQuestion.split('?')[0].replace(/[^a-zA-ZÀ-ú\s]/g, ""),
-    prompt,
-  }
+  return JSON.parse(returnedQuestion)
 }
 
 async function handleGPT (prompt: string) {
@@ -29,26 +24,29 @@ async function handleGPT (prompt: string) {
   const completion = await openai.createCompletion({
     model: "gpt-3.5-turbo-instruct",
     prompt,
-    temperature: 0.6,
+    temperature: 0.4,
+    max_tokens: 100,
   });
+
   return completion
 }
 
-function concatenatePrevious(previousPrompt: string, questions: Questions[]){
+function concatenate(questions: Questions[]){
   questions.forEach(element => {
-    previousPrompt += " | " + element.question + ": " + element.answer + " \n "
-    allResponses.push({question: element.question, awns: element.answer})
+    allResponses.push({question: element.question, answer: element.answer})
   });
-  return previousPrompt
-}
+  const prompt = `Sempre faça apenas um JSON, sem texto explicativo, no formato:
+                  {
+                    "createdQuestion": "SUA PERGUNTA",
+                    "suggestedAnswers": ["RESPOSTA 1", "RESPOSTA 2", "RESPOSTA 3"]
+                  } 
+                  A pergunda em createdQuestion deve ser específica sobre uma única característica do produto
+                  sobre o qual fornecerei o contexto abaixo. Não faça uma pergunta sobre qualquer produto.
+                  Nunca repita uma pergunta já feita. NÃO RESPONDA A PERGUNTA FEITA NA STRING DA PERGUNTA. 
+                  O intuito dessa pergunta é construir uma descrição melhor detalhada do anuncio do 
+                  produto. Segue as perguntas e respostas: `
 
-function concatenate(text: string, questions: Questions[]){
-  questions.forEach(element => {
-    text += " | " + element.question + ": " + element.answer + " \n "
-    allResponses.push({question: element.question, awns: element.answer})
-  });
-  const prompt = `Sempre faça apenas uma pergunta e RETORNE APENAS A STRING, sem texto explicativo. Retorne essa pergunta (apenas a pergunta) em formato STRING "SUA PERGUNTA". Nunca repita uma pergunta já feita. NÃO RESPONDA A PERGUNTA FEITA. O intuito dessa pergunta é construir uma descrição melhor detalhada do anuncio do produto. Segue as perguntas e respostas: `
-  return prompt + text
+  return prompt + allResponses.map((element) => `{question:${element.question}, answer: ${element.answer}}`).join("\n")
 }
 
 export const chatService = {
