@@ -27,6 +27,7 @@
     "express-async-errors": "^3.1.1",
     "http-status": "^1.7.0",
     "joi": "^17.10.1",
+    "openai": "^3.1.0",
     "string-strip-html": "^8.5.0"
   }
 }

@@ -9,7 +9,7 @@ import { chatController } from "../controllers/chat.controller";
 
 const chatRouter = Router();
 
-chatRouter.post("/chat",
+chatRouter.post("/chat/:categoryId",
     stringStripHtml,
     validateSchema(chatSchemas.message, RequestOptions.body),
     chatController.postMessage
