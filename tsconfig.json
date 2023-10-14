@@ -6,7 +6,7 @@
     "moduleResolution": "Node",
     "baseUrl": "src",
   },
-  "ts-node": {
+  "ts-node-esm": {
     "esm": true
   },
 }
