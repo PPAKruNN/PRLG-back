@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { buildsRouter } from "./builds.routes";
+import { chatRouter } from "./chat.routes";
 
 const IndexRouter = Router();
 
-IndexRouter.use(buildsRouter);
+IndexRouter.use(chatRouter);
 
 export { IndexRouter };
