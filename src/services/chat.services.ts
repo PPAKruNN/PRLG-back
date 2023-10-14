@@ -2,34 +2,38 @@ import { Errors } from "../Errors/errors";
 import httpStatus from "http-status";
 import { Configuration, OpenAIApi } from "openai";
 import { answers, questions } from "../database/db";
+import { Questions } from "protocols/protocols";
 
-async function postMessage(text: string) {
+async function postMessage({ questions, previousPrompt, isFirstChat }) {
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
-
+  let text = ""
   const completion = await openai.createCompletion({
     model: "gpt-3.5-turbo-instruct",
-    prompt: generatePrompt(text),
+    prompt: Boolean(isFirstChat) ? concatenate(text, questions) : concatenatePrevious(previousPrompt, questions),
     temperature: 0.6,
   });
-  // Se a resposta for aceitável fazer outra requisição para pegar os 
-  // autocompletes para pŕoxima pergunta ou já pedi-los antes e adicionar resposta em answers
 
-  console.log(completion.data);
+  const returnedQuestion = completion.data.choices[0].text.replace("\n", '');
 
-  return completion.data.choices[0].text;
+  return returnedQuestion.split('?')[0];
 }
 
-function generatePrompt(text: string) {
-  const capitalizedAnimal =
-    text[0].toUpperCase() + text.slice(1).toLowerCase();
-  return `
-    Answer only yes or no. Is the following answer acceptable for the question: ${questions[0].questions[answers.length]}?
+function concatenatePrevious(previousPrompt: string, questions: Questions[]){
+  questions.forEach(element => {
+    previousPrompt += element.question + ": " + element.answer + " \n "
+  });
+  return previousPrompt
+}
 
-    ${text}
-  `;
+function concatenate(text: string, questions: Questions[]){
+  questions.forEach(element => {
+    text += element.question + ": " + element.answer + " \n "
+  });
+  const prompt = `Sempre faça apenas uma pergunta e RETORNE APENAS A STRING, sem texto explicativo. Retorne essa pergunta (apenas a pergunta) em formato STRING "SUA PERGUNTA". Nunca repita uma pergunta já feita. NÃO RESPONDA A PERGUNTA FEITA. O intuito dessa pergunta é construir uma descrição melhor detalhada do anuncio do produto. Segue as perguntas e respostas: `
+  return prompt + text
 }
 
 export const chatService = {

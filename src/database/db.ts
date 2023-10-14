@@ -33,40 +33,18 @@ export const categories = [
 ]
 
 export const questions = [
-    { 
-        categoryId: 4,
-        subCategoryId: 2,
-        questions: [
-            {
-                id: 1,
-                question: "Qual o modelo do seu celular?",
-            },
-            {
-                id: 2,
-                question: "Qual a marca do seu celular?",
-            },
-            {
-                id: 3,
-                question: "Qual a condição do seu celular?",
-            },
-            {
-                id: 4,
-                question: "Qual a memória interna do seu celular?",
-            },
-            {
-                id: 5,
-                question: "Qual a cor do seu celular?",
-            },
-            {
-                id: 6,
-                question: "Qual a saúde da bateria do seu celular?",
-            },
-            {
-                id: 7,
-                question: "Qual o preço que você deseja anunciar?",
-            }
-        ]
-    }
+    {
+        id: 1,
+        question: "Qual é o produto que você está querendo vender?",
+    },
+    {
+        id: 2,
+        question: "Qual o título do seu anúncio?",
+    },
+    {
+        id: 3,
+        question: "Qual o preço que deseja colocar?",
+    },
 ];
 
 export const answers = [];

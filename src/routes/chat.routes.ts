@@ -9,9 +9,10 @@ import { chatController } from "../controllers/chat.controller";
 
 const chatRouter = Router();
 
-chatRouter.post("/chat/:categoryId",
+//TODO route de sugestões de respostas
+chatRouter.post("/chat", //:categoryId
     stringStripHtml,
-    validateSchema(chatSchemas.message, RequestOptions.body),
+    // validateSchema(chatSchemas.message, RequestOptions.body),
     chatController.postMessage
 );
 
