@@ -73,19 +73,29 @@ async function postCustomerQuestion(question: string) {
   const promptCostumer = `Tente responder à pergunta do cliente de forma sucinta. 
                   PERGUNTA DO CLIENTE: ${question};
 
-                  Responda no formato: 
+                  Responda SEMPRE COM APENAS 1 OBJETO COM APENAS A PROPRIEDADE answer, como no formato: 
+                  {
+                    "answer": "Sim, o produto é novo."
+                  }
+                  
+                  ou então:
 
                   {
-                    "answer": "SUA RESPOSTA"
+                    "answer": "Não, o produto é branco."
                   }
 
                   Responda apenas baseado nas informações do contexto, se não encontrar a resposta
-                  no contexto RESPONDA: "Não sei responder.". Segue o contexto: ${getProductData()}`;
+                  no contexto SEMPRE RESPONDA: "Não sei responder.". Segue o contexto: ${getProductData()}`;
 
   let returnedAnswer = "";
   while (returnedAnswer.length === 0) {
     let completion = await handleGPT(promptCostumer)
-    returnedAnswer = JSON.parse(completion.data.choices[0].text).answer;
+    console.log(completion.data.choices[0].text)
+    if (!JSON.parse(completion.data.choices[0].text) || !JSON.parse(completion.data.choices[0].text).answer) {
+      returnedAnswer = "";
+    } else {
+      returnedAnswer = JSON.parse(completion.data.choices[0].text).answer;
+    }
   }
 
   return returnedAnswer
@@ -107,8 +117,10 @@ async function handleGPT(prompt: string, temperature = 0.4) {
 }
 
 function concatenate(questions: Questions[]) {
-  allResponses.push(questions);
-  const prompt = `Sempre faça apenas um JSON, sem texto explicativo, no formato:
+  questions.forEach(element => {
+    allResponses.push({ question: element.question, answer: element.answer })
+  });
+  const prompt = `Sempre faça apenas 1 JSON, sem texto explicativo, SEMPRE no formato:
                   {
                     "createdQuestion": "SUA PERGUNTA",
                     "suggestedAnswers": ["RESPOSTA 1", "RESPOSTA 2", "RESPOSTA 3"]
