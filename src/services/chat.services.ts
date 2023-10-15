@@ -102,18 +102,12 @@ async function postMessage({ questions }) {
     }
   ]
   let returnedQuestion: any = { createdQuestion: "", suggestedAnswers: [] };
-  if (allResponses.length < firstQuestions.length - 1) {
-    if (questions.question.length === 0) {
-      return firstQuestions[0]
-    } else {
-      allResponses.push({ question: questions.question, answer: questions.answer })
-      const response = firstQuestions[allResponses.length]
-  
-      return response
-    }
-  } else {
+  if (allResponses.length < 3){
+    const response = firstQuestions[allResponses.length]
+    allResponses.push(firstQuestions[allResponses.length])
+    return response
+  }else{
     let prompt = concatenate(questions);
-
     while (returnedQuestion.createdQuestion.length === 0 || allResponses.some((element) => element.question === returnedQuestion.createdQuestion)) {
       let completion = await handleGPT(prompt)
 
@@ -175,9 +169,8 @@ async function handleGPT(prompt: string, temperature = 0.4) {
   return completion
 }
 
-function concatenate(questions: Questions) {
-  allResponses.push({ question: questions.question, answer: questions.answer })
-
+function concatenate(questions: Questions[]) {
+  allResponses.push(questions);
   const prompt = `Sempre faça apenas 1 JSON, sem texto explicativo, SEMPRE no formato:
                   {
                     "createdQuestion": "SUA PERGUNTA",
