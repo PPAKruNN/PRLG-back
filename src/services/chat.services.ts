@@ -114,6 +114,7 @@ function getProductData() {
 
 export const chatService = {
   postMessage,
+  postCostumerQuestion,
   getResponseDescription,
   getForm,
 };
