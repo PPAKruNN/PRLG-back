@@ -53,7 +53,7 @@ async function postMessage({ questions }) {
   return returnedQuestion
 }
 
-async function postCostumerQuestion(question: string) {
+async function postCustomerQuestion(question: string) {
   const promptCostumer = `Tente responder à pergunta do cliente de forma sucinta. 
                   PERGUNTA DO CLIENTE: ${question};
 
@@ -114,7 +114,7 @@ function getProductData() {
 
 export const chatService = {
   postMessage,
-  postCostumerQuestion,
+  postCustomerQuestion,
   getResponseDescription,
   getForm,
 };

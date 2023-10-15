@@ -9,8 +9,8 @@ async function postMessage(req: Request, res: Response) {
   res.status(httpStatus.OK).json(response);
 }
 
-async function postCostumerQuestion(req: Request, res: Response) {
-  const response = await chatService.postCostumerQuestion(req.body.question);
+async function postCustomerQuestion(req: Request, res: Response) {
+  const response = await chatService.postCustomerQuestion(req.body.question);
 
   res.status(httpStatus.OK).json(response);
 }
@@ -25,6 +25,6 @@ async function getDescription(req: Request, res: Response) {
 export const chatController = {
   postMessage,
   getDescription,  
-  postCostumerQuestion,
+  postCustomerQuestion,
   
 };
