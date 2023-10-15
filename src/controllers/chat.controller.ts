@@ -3,9 +3,12 @@ import httpStatus from "http-status";
 import { chatService } from "../services/chat.services";
 import { allResponses } from "../database/db";
 
-async function postMessage(req: Request, res: Response) {
-  const response = await chatService.postMessage(req.body);
+let counter = 0;
 
+async function postMessage(req: Request, res: Response) {
+  req.body.counter = counter;
+  const response = await chatService.postMessage(req.body);
+  console.info(req.body.questions)
   res.status(httpStatus.OK).json(response);
 }
 

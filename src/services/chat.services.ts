@@ -43,14 +43,30 @@ async function getForm(description: string){
 }
 
 async function postMessage({ questions }) {
+  const firstQuestions = [
+    {
+      question: "Qual é o produto que você está querendo vender?",
+    },
+    {
+      question: "Qual o título do seu anúncio?",
+    },
+    {
+      question: "Qual é a marca do produto?",
+    }
+  ]
   let prompt = concatenate(questions);
   let returnedQuestion: any = { createdQuestion: "", suggestedAnswers: [] };
-  while (returnedQuestion.createdQuestion.length === 0 || allResponses.some((element) => element.question === returnedQuestion.createdQuestion)) {
-    let completion = await handleGPT(prompt)
-    returnedQuestion = JSON.parse(completion.data.choices[0].text);
+  if (allResponses.length < 3){
+    const response = firstQuestions[allResponses.length]
+    allResponses.push(firstQuestions[allResponses.length])
+    return response
+  }else{
+    while (returnedQuestion.createdQuestion.length === 0 || allResponses.some((element) => element.question === returnedQuestion.createdQuestion)) {
+      let completion = await handleGPT(prompt)
+      returnedQuestion = JSON.parse(completion.data.choices[0].text);
+    }
+    return returnedQuestion
   }
-
-  return returnedQuestion
 }
 
 async function postCustomerQuestion(question: string) {
