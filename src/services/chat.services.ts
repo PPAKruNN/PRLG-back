@@ -107,9 +107,7 @@ async function handleGPT(prompt: string, temperature = 0.4) {
 }
 
 function concatenate(questions: Questions[]) {
-  questions.forEach(element => {
-    allResponses.push({ question: element.question, answer: element.answer })
-  });
+  allResponses.push(questions);
   const prompt = `Sempre faça apenas um JSON, sem texto explicativo, no formato:
                   {
                     "createdQuestion": "SUA PERGUNTA",
