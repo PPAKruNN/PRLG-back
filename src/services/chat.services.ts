@@ -44,17 +44,38 @@ async function getForm(description: string){
 
 async function postMessage({ questions }) {
   let prompt = concatenate(questions);
-  let returnedQuestion = ""
-  while (returnedQuestion.length === 0) {
+  let returnedQuestion: any = { createdQuestion: "", suggestedAnswers: [] };
+  while (returnedQuestion.createdQuestion.length === 0 || allResponses.some((element) => element.question === returnedQuestion.createdQuestion)) {
     let completion = await handleGPT(prompt)
-    returnedQuestion = completion.data.choices[0].text;
-    // console.log(returnedQuestion)
+    returnedQuestion = JSON.parse(completion.data.choices[0].text);
   }
 
-  return JSON.parse(returnedQuestion)
+  return returnedQuestion
 }
 
-async function handleGPT (prompt: string) {
+async function postCostumerQuestion(question: string) {
+  const promptCostumer = `Tente responder à pergunta do cliente de forma sucinta. 
+                  PERGUNTA DO CLIENTE: ${question};
+
+                  Responda no formato: 
+
+                  {
+                    "answer": "SUA RESPOSTA"
+                  }
+
+                  Responda apenas baseado nas informações do contexto, se não encontrar a resposta
+                  no contexto RESPONDA: "Não sei responder.". Segue o contexto: ${getProductData()}`;
+
+  let returnedAnswer = "";
+  while (returnedAnswer.length === 0) {
+    let completion = await handleGPT(promptCostumer)
+    returnedAnswer = JSON.parse(completion.data.choices[0].text).answer;
+  }
+
+  return returnedAnswer
+}
+
+async function handleGPT(prompt: string, temperature = 0.4) {
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -62,16 +83,16 @@ async function handleGPT (prompt: string) {
   const completion = await openai.createCompletion({
     model: "gpt-3.5-turbo-instruct",
     prompt,
-    temperature: 0.4,
+    temperature,
     max_tokens: 800,
   });
 
   return completion
 }
 
-function concatenate(questions: Questions[]){
+function concatenate(questions: Questions[]) {
   questions.forEach(element => {
-    allResponses.push({question: element.question, answer: element.answer})
+    allResponses.push({ question: element.question, answer: element.answer })
   });
   const prompt = `Sempre faça apenas um JSON, sem texto explicativo, no formato:
                   {
@@ -84,11 +105,16 @@ function concatenate(questions: Questions[]){
                   O intuito dessa pergunta é construir uma descrição melhor detalhada do anuncio do 
                   produto. Segue as perguntas e respostas: `
 
-  return prompt + allResponses.map((element) => `{question:${element.question}, answer: ${element.answer}}`).join("\n")
+  return prompt + allResponses.map((element) => `{ question: ${element.question}, answer: ${element.answer} }`).join("\n")
+}
+
+function getProductData() {
+  return allResponses.map((element) => `{ question: ${element.question}, answer: ${element.answer} }`).join("\n")
 }
 
 export const chatService = {
   postMessage,
+  postCostumerQuestion,
   getResponseDescription,
   getForm,
 };

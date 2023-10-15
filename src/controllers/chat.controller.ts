@@ -5,6 +5,13 @@ import { allResponses } from "../database/db";
 
 async function postMessage(req: Request, res: Response) {
   const response = await chatService.postMessage(req.body);
+
+  res.status(httpStatus.OK).json(response);
+}
+
+async function postCostumerQuestion(req: Request, res: Response) {
+  const response = await chatService.postCostumerQuestion(req.body.question);
+
   res.status(httpStatus.OK).json(response);
 }
 
@@ -15,8 +22,9 @@ async function getDescription(req: Request, res: Response) {
   res.status(httpStatus.OK).json({... description, ...response});
 }
 
-
 export const chatController = {
   postMessage,
-  getDescription,
+  getDescription,  
+  postCostumerQuestion,
+  
 };
