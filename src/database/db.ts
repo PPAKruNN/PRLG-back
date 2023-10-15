@@ -47,4 +47,35 @@ export const questions = [
     },
 ];
 
+export const celphoneQuestions = [
+    {
+        id: 1,
+        question: "Qual o modelo do seu celular?",
+    },
+    {
+        id: 2,
+        question: "Qual a marca do seu celular?",
+    },
+    {
+        id: 3,
+        question: "Qual a condição do seu celular?",
+    },
+    {
+        id: 4,
+        question: "Qual a memória interna do seu celular?",
+    },
+    {
+        id: 5,
+        question: "Qual a cor do seu celular?",
+    },
+    {
+        id: 6,
+        question: "Qual a saúde da bateria do seu celular?",
+    },
+    {
+        id: 7,
+        question: "Qual o preço que você deseja anunciar?",
+    }
+]
+
 export const allResponses = [];
