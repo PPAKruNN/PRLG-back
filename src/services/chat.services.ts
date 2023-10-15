@@ -6,25 +6,33 @@ import { Questions } from "protocols/protocols";
 
 async function getResponseDescription() {
   const prompt = `${allResponses.map((element) => `{question:${element.question}, answer: ${element.answer}}`).join("\n")}
-  Com base nas respostas das perguntas acima, faca uma breve descricao (de no minimo 200 caracteres) do anuncio deste produto. LEMBRE DE Sempre faça apenas um JSON, sem texto explicativo, no formato:
+  Com base nas respostas das perguntas acima, faca uma breve descricao (de no minimo 100 
+  caracteres) do anuncio deste produto. LEMBRE DE Sempre faça apenas um JSON, sem texto 
+  explicativo e SEM CRIAR INFORMAÇÕES QUE NÃO FORAM FORNECIDAS NAS RESPOSTAS, no formato:
   {
-    "descricao": "DESCRICAO SUGERIDA POR VOCE",
+    "description": "DESCRICAO SUGERIDA POR VOCE",
   }
   `
-  let returnedQuestion = ""
+  let returnedQuestion: any = ""
   while (returnedQuestion.length === 0) {
     let completion = await handleGPT(prompt)
-    returnedQuestion = completion.data.choices[0].text;
+    
+    if (!completion.data.choices[0].text.includes("description")) {
+      returnedQuestion = "";
+    } else {
+      returnedQuestion = JSON.parse(completion.data.choices[0].text);
+    }
   }
 
-  return JSON.parse(returnedQuestion)
+  return returnedQuestion
 }
 
-async function getForm(description: string){
+async function getForm(description: string) {
   const prompt = `
-  "${description}
+  "${allResponses.map((element) => `{question:${element.question}, answer: ${element.answer}}`).join("\n")}
 
-  Com base na descricao de um anuncio acima, responda as perguntas abaixos. LEMBRE DE Sempre fazer apenas um ARRAY de JSON, sem texto explicativo, no formato:
+  Com base nas informações acima, responda as perguntas abaixos. LEMBRE DE Sempre 
+  fazer apenas 1 ARRAY de objetos no formato JSON, sem texto explicativo, como no modelo:
   [
     {
       "id": "ID DA PERGUNTA",
@@ -32,14 +40,53 @@ async function getForm(description: string){
       "answer": "SUA RESPOSTA DE CADA PERGUNTA"
     },
   ]
+
+  NAS RESPOSTAS APENAS FORNEÇA INFORMAÇÕES CONTIDAS NO CONTEXTO FORNECIDO, NÃO CRIE INFORMAÇÕES.
+  Caso não consiga responder alguma pergunta deixe a resposta como uma string vazia. Segue as perguntas:
+
+  {
+      id: 1,
+      question: "Qual o modelo do seu celular?",
+  },
+  {
+      id: 2,
+      question: "Qual a marca do seu celular?",
+  },
+  {
+      id: 3,
+      question: "Qual a condição do seu celular?",
+  },
+  {
+      id: 4,
+      question: "Qual a memória interna do seu celular?",
+  },
+  {
+      id: 5,
+      question: "Qual a cor do seu celular?",
+  },
+  {
+      id: 6,
+      question: "Qual a saúde da bateria do seu celular?",
+  },
+  {
+      id: 7,
+      question: "Qual o preço que você deseja anunciar?",
+  }
   `
-  let returnedQuestion = ""
+
+  let returnedQuestion: any = ""
   while (returnedQuestion.length === 0) {
     let completion = await handleGPT(prompt)
-    returnedQuestion = completion.data.choices[0].text;
+    console.log(completion.data.choices[0].text)
+    
+    if (!completion.data.choices[0].text.includes("id")) {
+      returnedQuestion = "";
+    } else {
+      returnedQuestion = JSON.parse(completion.data.choices[0].text);
+    }
   }
 
-  return JSON.parse(returnedQuestion)
+  return returnedQuestion
 }
 
 async function postMessage({ questions }) {
@@ -54,17 +101,29 @@ async function postMessage({ questions }) {
       question: "Qual é a marca do produto?",
     }
   ]
-  let prompt = concatenate(questions);
   let returnedQuestion: any = { createdQuestion: "", suggestedAnswers: [] };
-  if (allResponses.length < 3){
-    const response = firstQuestions[allResponses.length]
-    allResponses.push(firstQuestions[allResponses.length])
-    return response
-  }else{
+  if (allResponses.length < firstQuestions.length - 1) {
+    if (questions.question.length === 0) {
+      return firstQuestions[0]
+    } else {
+      allResponses.push({ question: questions.question, answer: questions.answer })
+      const response = firstQuestions[allResponses.length]
+  
+      return response
+    }
+  } else {
+    let prompt = concatenate(questions);
+
     while (returnedQuestion.createdQuestion.length === 0 || allResponses.some((element) => element.question === returnedQuestion.createdQuestion)) {
       let completion = await handleGPT(prompt)
-      returnedQuestion = JSON.parse(completion.data.choices[0].text);
+
+      if (!completion.data.choices[0].text.includes("createdQuestion")) {
+        returnedQuestion = "";
+      } else {
+        returnedQuestion = JSON.parse(completion.data.choices[0].text);
+      }
     }
+
     return returnedQuestion
   }
 }
@@ -90,8 +149,8 @@ async function postCustomerQuestion(question: string) {
   let returnedAnswer = "";
   while (returnedAnswer.length === 0) {
     let completion = await handleGPT(promptCostumer)
-    console.log(completion.data.choices[0].text)
-    if (!JSON.parse(completion.data.choices[0].text) || !JSON.parse(completion.data.choices[0].text).answer) {
+
+    if (!completion.data.choices[0].text.includes("answer")) {
       returnedAnswer = "";
     } else {
       returnedAnswer = JSON.parse(completion.data.choices[0].text).answer;
@@ -116,10 +175,9 @@ async function handleGPT(prompt: string, temperature = 0.4) {
   return completion
 }
 
-function concatenate(questions: Questions[]) {
-  questions.forEach(element => {
-    allResponses.push({ question: element.question, answer: element.answer })
-  });
+function concatenate(questions: Questions) {
+  allResponses.push({ question: questions.question, answer: questions.answer })
+
   const prompt = `Sempre faça apenas 1 JSON, sem texto explicativo, SEMPRE no formato:
                   {
                     "createdQuestion": "SUA PERGUNTA",

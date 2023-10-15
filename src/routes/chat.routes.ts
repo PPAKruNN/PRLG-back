@@ -21,4 +21,6 @@ chatRouter.post("/customer-question", //:productId
     chatController.postCustomerQuestion
 );
 
+chatRouter.get("/announcement", chatController.getDescription);
+
 export { chatRouter };
