@@ -9,11 +9,11 @@ import { chatController } from "../controllers/chat.controller";
 
 const chatRouter = Router();
 
-//TODO route de sugestões de respostas
 chatRouter.post("/chat", //:categoryId
     stringStripHtml,
     // validateSchema(chatSchemas.message, RequestOptions.body),
     chatController.postMessage
-);
+).get("/chat", chatController.getDescription);
+
 
 export { chatRouter };
