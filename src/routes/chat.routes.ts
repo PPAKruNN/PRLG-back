@@ -16,4 +16,9 @@ chatRouter.post("/chat", //:categoryId
     chatController.postMessage
 );
 
+chatRouter.post("/costumer-question", //:productId
+    stringStripHtml,
+    chatController.postCostumerQuestion
+);
+
 export { chatRouter };
