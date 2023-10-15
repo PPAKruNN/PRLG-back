@@ -1,8 +1,46 @@
 import { Errors } from "../Errors/errors";
 import httpStatus from "http-status";
 import { Configuration, OpenAIApi } from "openai";
-import { questions, allResponses } from "../database/db";
+import { questions, allResponses, celphoneQuestions } from "../database/db";
 import { Questions } from "protocols/protocols";
+
+async function getResponseDescription() {
+  const prompt = `${allResponses.map((element) => `{question:${element.question}, answer: ${element.answer}}`).join("\n")}
+  Com base nas respostas das perguntas acima, faca uma breve descricao (de no minimo 200 caracteres) do anuncio deste produto. LEMBRE DE Sempre faça apenas um JSON, sem texto explicativo, no formato:
+  {
+    "descricao": "DESCRICAO SUGERIDA POR VOCE",
+  }
+  `
+  let returnedQuestion = ""
+  while (returnedQuestion.length === 0) {
+    let completion = await handleGPT(prompt)
+    returnedQuestion = completion.data.choices[0].text;
+  }
+
+  return JSON.parse(returnedQuestion)
+}
+
+async function getForm(description: string){
+  const prompt = `
+  "${description}
+
+  Com base na descricao de um anuncio acima, responda as perguntas abaixos. LEMBRE DE Sempre fazer apenas um ARRAY de JSON, sem texto explicativo, no formato:
+  [
+    {
+      "id": "ID DA PERGUNTA",
+      "question": "CADA PERGUNTA",
+      "answer": "SUA RESPOSTA DE CADA PERGUNTA"
+    },
+  ]
+  `
+  let returnedQuestion = ""
+  while (returnedQuestion.length === 0) {
+    let completion = await handleGPT(prompt)
+    returnedQuestion = completion.data.choices[0].text;
+  }
+
+  return JSON.parse(returnedQuestion)
+}
 
 async function postMessage({ questions }) {
   let prompt = concatenate(questions);
@@ -10,7 +48,7 @@ async function postMessage({ questions }) {
   while (returnedQuestion.length === 0) {
     let completion = await handleGPT(prompt)
     returnedQuestion = completion.data.choices[0].text;
-    console.log(returnedQuestion)
+    // console.log(returnedQuestion)
   }
 
   return JSON.parse(returnedQuestion)
@@ -25,7 +63,7 @@ async function handleGPT (prompt: string) {
     model: "gpt-3.5-turbo-instruct",
     prompt,
     temperature: 0.4,
-    max_tokens: 100,
+    max_tokens: 800,
   });
 
   return completion
@@ -51,4 +89,6 @@ function concatenate(questions: Questions[]){
 
 export const chatService = {
   postMessage,
+  getResponseDescription,
+  getForm,
 };
